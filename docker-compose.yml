@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  webserver:
+    image: php:7.4-apache
+    ports:
+      - "80:80"
+    volumes:
+      - ./src:/var/www/html
+    networks:
+      - my_network
+    depends_on:
+      - database
+    environment:
+      APACHE_DOCUMENT_ROOT: /var/www/html/public
+      APACHE_LOG_DIR: /var/log/apache2
+
+  database:
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data:/var/lib/mysql
+    networks:
+      - my_network
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: myapp
+
+networks:
+  my_network:

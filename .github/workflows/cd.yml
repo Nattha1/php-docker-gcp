@@ -39,8 +39,8 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: deploy-artifact
-        path: ${{ secrets.DOCKER_HUB_USERNAME }}/php-docker-gcp:${{ github.sha }}
+        name: php-files
+        path: php-1/login.php
         
   deploy:
     name: Deploy to GCP
@@ -54,7 +54,7 @@ jobs:
     - name: Download artifact  
       uses: actions/download-artifact@v3
       with:
-        name: deploy-artifact
+        name: php-files
         
     - name: Setup Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1

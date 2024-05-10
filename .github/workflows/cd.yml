@@ -37,11 +37,12 @@ jobs:
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/php-1:${{ github.sha }}
         
     - name: Create Release Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: php-1
-        path: ${{ secrets.DOCKER_HUB_USERNAME }}/php-1:${{ github.sha }}
-        
+      run: |
+        mkdir -p release
+        docker save -o release/php-1_${GITHUB_SHA}.tar ${{ secrets.DOCKER_HUB_USERNAME }}/php-1:${{ github.sha }}
+      env:
+        GITHUB_SHA: ${{ github.sha }}
+
   deploy:
     name: Deploy to GCP
     needs: build

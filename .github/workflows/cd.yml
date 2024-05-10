@@ -34,13 +34,13 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/php-docker-gcp:${{ github.sha }}
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/php-1:${{ github.sha }}
         
     - name: Create Release Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: php-docker-gcp
-        path: ${{ secrets.DOCKER_HUB_USERNAME }}/php-docker-gcp:${{ github.sha }}
+        name: php-1
+        path: ${{ secrets.DOCKER_HUB_USERNAME }}/php-1:${{ github.sha }}
         
   deploy:
     name: Deploy to GCP
@@ -54,7 +54,7 @@ jobs:
     - name: Get build artifact
       uses: actions/download-artifact@v3
       with:
-        name: php-docker-gcp
+        name: php-1
         
     - name: Setup Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1

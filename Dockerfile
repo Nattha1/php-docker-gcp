@@ -18,7 +18,7 @@ ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 ENV APACHE_LOG_DIR /var/log/apache2
 
 # Expose port 80 เพื่อให้สามารถเข้าถึงเว็บแอปพลิเคชันผ่านเบราว์เซอร์
-EXPOSE 80
+EXPOSE 8000
 
 # คําสั่งเริ่มต้น Apache server เมื่อ Docker container ถูกเริ่มขึ้น
 CMD ["apache2-foreground"]

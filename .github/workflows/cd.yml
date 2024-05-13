@@ -35,7 +35,7 @@ jobs:
         context: .
         push: true
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/php-docker-gcp:${{ github.sha }}
-        file: /Dockerfile
+        file: Dockerfile
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3

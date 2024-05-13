@@ -40,7 +40,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: php-files
-        path: php-1/login.php
+        path: php-1
         
   deploy:
     name: Deploy to GCP
@@ -54,7 +54,7 @@ jobs:
     - name: Download artifact  
       uses: actions/download-artifact@v3
       with:
-        name: php-files
+        name: php-1
         
     - name: Setup Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1

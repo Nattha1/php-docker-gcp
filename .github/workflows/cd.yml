@@ -32,10 +32,10 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
       with:
-        context: ./php-docker-gcp # ไดเรกทอรีที่มีไฟล์ Dockerfile
+        context: . # ไดเรกทอรีที่มีไฟล์ Dockerfile
         push: true
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/php-docker-gcp:${{ github.sha }}
-        file: ./php-docker-gcp/Dockerfile # เส้นทางไฟล์ Dockerfile
+        file: Dockerfile # เส้นทางไฟล์ Dockerfile
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3

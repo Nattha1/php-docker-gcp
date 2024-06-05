@@ -1,4 +1,4 @@
-name: Continuous Deployment --> test
+name: Continuous Deployment
 
 on:
   release:
@@ -9,9 +9,9 @@ env:
   GCP_REGION: ${{ secrets.GCP_REGION }}
   SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
   IMAGE_REPO: ${{ secrets.IMAGE_REPO }}
+  ARTIFACT_REGISTRY_HOSTNAME: ${{ secrets.ARTIFACT_REGISTRY_HOSTNAME }}
 
 jobs:
-
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -31,6 +31,9 @@ jobs:
         
     - name: Build Docker image
       run: docker build -t natthaphonc01/php-docker-gcp:latest .
+      
+    - name: Verify Docker image exists locally
+      run: docker images natthaphonc01/php-docker-gcp:latest
       
     - name: Push Docker image to Docker Hub
       run: docker push natthaphonc01/php-docker-gcp:latest
@@ -69,15 +72,18 @@ jobs:
           
     - name: Build Docker image with SHA tag
       run: |-
-        docker build -t ${{ secrets.ARTIFACT_REGISTRY_HOSTNAME }}/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_REPO }}:${{ github.sha }} .
+        docker build -t ${{ env.ARTIFACT_REGISTRY_HOSTNAME }}/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_REPO }}:${{ github.sha }} .
+      
+    - name: Verify Docker image exists locally with SHA tag
+      run: docker images ${{ env.ARTIFACT_REGISTRY_HOSTNAME }}/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_REPO }}:${{ github.sha }}
         
     - name: Push image to Artifact Registry
       run: |-
-        docker push ${{ secrets.ARTIFACT_REGISTRY_HOSTNAME }}/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_REPO }}:${{ github.sha }}
+        docker push ${{ env.ARTIFACT_REGISTRY_HOSTNAME }}/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_REPO }}:${{ github.sha }}
         
     - name: Deploy to Cloud Run
       run: |-
         gcloud run deploy ${{ env.SERVICE_NAME }} \
           --region=${{ env.GCP_REGION }} \
-          --image=${{ secrets.ARTIFACT_REGISTRY_HOSTNAME }}/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_REPO }}:${{ github.sha }} \
+          --image=${{ env.ARTIFACT_REGISTRY_HOSTNAME }}/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_REPO }}:${{ github.sha }} \
           --port=8080

@@ -3,7 +3,7 @@ session_start();
 
 $host = 'localhost';
 $dbname = 'php_docker';
-$username = 'root';
+$username = 'MYSQL_USER';
 $password = '';
 
 

@@ -9,9 +9,9 @@ env:
   GCP_REGION: ${{ secrets.GCP_REGION }}
   SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
   IMAGE_REPO: ${{ secrets.IMAGE_REPO }}
+  ARTIFACT_REGISTRY_HOSTNAME: ${{ secrets.ARTIFACT_REGISTRY_HOSTNAME }}
 
 jobs:
-
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -29,20 +29,20 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_PASSWORD }}
         
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v3
-      with:
-        context: . # ไดเรกทอรีที่มีไฟล์ Dockerfile
-        push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/php-docker-gcp:${{ github.sha }}
-        file: Dockerfile # เส้นทางไฟล์ Dockerfile
-
+    - name: Build Docker image
+      run: docker build -t natthaphonc01/php-docker-gcp:latest .
+      
+    - name: Verify Docker image exists locally
+      run: docker images natthaphonc01/php-docker-gcp:latest
+      
+    - name: Push Docker image to Docker Hub
+      run: docker push natthaphonc01/php-docker-gcp:latest
+      
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: php-artifacts
         path: php-1
-      
         
   deploy:
     name: Deploy to GCP
@@ -52,8 +52,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-
-    - name: Download artifact  
+      
+    - name: Download artifact
       uses: actions/download-artifact@v3
       with:
         name: php-artifacts
@@ -63,20 +63,27 @@ jobs:
       with:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
         service_account_key: ${{ secrets.GCP_SA_KEY }}
-
+        
     - name: Configure Docker credentials
       run: |-
         gcloud --quiet auth configure-docker \
-        --project=${{ secrets.GCP_PROJECT_ID }} \
-        --verbosity=error
-
-    - name: Push image to Artifact Registry  
+          --project=${{ secrets.GCP_PROJECT_ID }} \
+          --verbosity=error
+          
+    - name: Build Docker image with SHA tag
       run: |-
-        docker push ${{ secrets.ARTIFACT_REGISTRY_HOSTNAME }}/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_REPO }}:${{ github.sha }}
-
+        docker build -t ${{ env.ARTIFACT_REGISTRY_HOSTNAME }}/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_REPO }}:${{ github.sha }} .
+      
+    - name: Verify Docker image exists locally with SHA tag
+      run: docker images ${{ env.ARTIFACT_REGISTRY_HOSTNAME }}/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_REPO }}:${{ github.sha }}
+        
+    - name: Push image to Artifact Registry
+      run: |-
+        docker push ${{ env.ARTIFACT_REGISTRY_HOSTNAME }}/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_REPO }}:${{ github.sha }}
+        
     - name: Deploy to Cloud Run
       run: |-
         gcloud run deploy ${{ env.SERVICE_NAME }} \
-        --region=${{ env.GCP_REGION }} \
-        --image=${{ secrets.ARTIFACT_REGISTRY_HOSTNAME }}/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_REPO }}:${{ github.sha }} \
-        --port=8080
+          --region=${{ env.GCP_REGION }} \
+          --image=${{ env.ARTIFACT_REGISTRY_HOSTNAME }}/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_REPO }}:${{ github.sha }} \
+          --port=8080
